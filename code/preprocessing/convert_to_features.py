@@ -19,7 +19,7 @@ class Audio2Features:
         self.audio_dir = audio_dir
 
         if feature_type == "amplitude":
-            self.convert2features = self.identity
+            self.convert2features = self.downsample
         elif feature_type == "mel":
             self.convert2features = self.convert2mel
         elif feature_type == "mfcc":
@@ -57,11 +57,10 @@ class Audio2Features:
             "welsh": 8,
         }
 
-    def normalize(self, features):
-        features = (features - np.min(features)) / (np.max(features) - np.min(features))
-        return features
+        self.sample_rate = 22050
 
-    def indentity(self, audio):
+    def downsample(self, audio):
+        audio = librosa.resample(y=audio, orig_sr=self.sample_rate, target_sr=16000)
         return audio
 
     def get_label(self, filepath):
@@ -98,9 +97,6 @@ class Audio2Features:
 
         features_array = np.stack(features_array, axis=0)
         labels_array = np.stack(labels_array, axis=0)
-
-        # Min-max normalization on features
-        features_array = self.normalize(features_array)
 
         np.save(self.features_path, features_array)
         np.save(self.labels_path, labels_array)
