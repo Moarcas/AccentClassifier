@@ -57,6 +57,10 @@ class Audio2Features:
             "welsh": 8,
         }
 
+    def normalize(self, features):
+        features = (features - np.min(features)) / (np.max(features) - np.min(features))
+        return features
+
     def indentity(self, audio):
         return audio
 
@@ -94,6 +98,9 @@ class Audio2Features:
 
         features_array = np.stack(features_array, axis=0)
         labels_array = np.stack(labels_array, axis=0)
+
+        # Min-max normalization on features
+        features_array = self.normalize(features_array)
 
         np.save(self.features_path, features_array)
         np.save(self.labels_path, labels_array)
