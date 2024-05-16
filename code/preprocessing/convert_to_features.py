@@ -27,8 +27,8 @@ class Audio2Features:
         else:
             raise ValueError("Invalid feature type")
 
-        self.features_path = f'../data/arrays/{feature_type}_data.npy'
-        self.features_path = f'../data/arrays/{feature_type}_labels.npy'
+        self.features_path = f'../../data/arrays/{feature_type}_features.npy'
+        self.labels_path = '../../data/arrays/labels.npy'
 
         self._default_spec_kwargs_mel = {
             "sr": 22050,
@@ -57,27 +57,20 @@ class Audio2Features:
             "welsh": 8,
         }
 
+    def indentity(self, audio):
+        return audio
+
     def get_label(self, filepath):
         language = os.path.basename(filepath).split('_')[0]
         return self.language_label_map[language]
 
-    def std_fun(self, feature):
-        feature = self.standardize_function(feature)
-        feature = np.clip(feature, 0, 1)
-
-    def identity(self, audio):
-        audio = self.standardize_function(audio.reshape(-1, 1)).T
-        return audio
-
     def convert2mel(self, audio):
         mel_spectogram = librosa.feature.melspectrogram(y=audio, **self._default_spec_kwargs_mel)
         mel_spectogram = np.log(mel_spectogram)
-        mel_spectogram = self.standardize_function(mel_spectogram)
         return mel_spectogram
 
     def convert2mfcc(self, audio):
         mfcc = librosa.feature.mfcc(y=audio, **self._default_spec_kwargs_mfcc)
-        mfcc = self.standardize_function(mfcc)
         return mfcc
 
     def convert(self):
@@ -94,19 +87,18 @@ class Audio2Features:
         for filename in tqdm(glob(self.audio_dir)):
             audio, _ = librosa.load(filename)
             features = self.convert2features(audio)
-
             label = self.get_label(filename)
 
             features_array.append(features)
             labels_array.append(label)
 
-        features_array = np.concatenate(features_array, axis=1)
+        features_array = np.stack(features_array, axis=0)
         labels_array = np.stack(labels_array, axis=0)
 
-        np.save(self.spikes_path, features_array)
+        np.save(self.features_path, features_array)
         np.save(self.labels_path, labels_array)
 
-        print('Spikes saved successfully in', self.spikes_path)
+        print('Features saved successfully in', self.features_path)
         print('Labels saved successfully in', self.labels_path)
 
 
@@ -123,7 +115,7 @@ def main():
     selected_feature_type = sys.argv[1]
 
     a2f = Audio2Features(feature_type=selected_feature_type,
-                         audio_dir='../data/trimmedData/*.wav')
+                         audio_dir='../../data/trimmedData/*.wav')
     a2f.convert()
 
 

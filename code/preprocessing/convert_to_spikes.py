@@ -1,12 +1,7 @@
-from glob import glob
 import torch
 import sys
-from generate_arrays import make_standard_length, get_label
 import numpy as np
-import librosa
-from tqdm import tqdm
 from snntorch import spikegen
-from sklearn import preprocessing
 
 
 class Audio2Spikes:
@@ -31,60 +26,12 @@ class Audio2Spikes:
         else:
             raise ValueError("Invalid conversion type")
 
-        if feature_type == "amplitude":
-            self.convert2features = self.identity
-        elif feature_type == "mel":
-            self.convert2features = self.convert2mel
-        elif feature_type == "mfcc":
-            self.convert2features = self.convert2mfcc
-        else:
-            raise ValueError("Invalid feature type")
-
-        self.spikes_path = f'../data/arrays/{feature_type}_{conversion_type}_spikes.npy'
-        self.labels_path = f'../data/arrays/{feature_type}_{conversion_type}_labels.npy'
-
-        if conversion_type == "delta":
-            self.standardize_function = lambda x: x
-        else:
-            self.standardize_function = self.std_fun
-
-        self.std_fun = preprocessing.MinMaxScaler().fit_transform
+        self.spikes_path = f'../../data/arrays/{
+            feature_type}_{conversion_type}_spikes.npy'
+        self.features_path = f'../../data/arrays/{
+            feature_type}_features.npy'
 
         self.num_steps = 5
-
-        self._default_spec_kwargs_mel = {
-            "sr": 22050,
-            "n_mels": 20,
-            "n_fft": 512,
-            "hop_length": 256,
-        }
-
-        self._default_spec_kwargs_mfcc = {
-            "sr": 22050,
-            "n_mfcc": 13,
-            "n_mels": 20,
-            "n_fft": 512,
-            "hop_length": 256,
-        }
-
-    def std_fun(self, feature):
-        feature = self.standardize_function(feature)
-        feature = np.clip(feature, 0, 1)
-
-    def identity(self, audio):
-        audio = self.standardize_function(audio.reshape(-1, 1)).T
-        return audio
-
-    def convert2mel(self, audio):
-        mel_spectogram = librosa.feature.melspectrogram(y=audio, **self._default_spec_kwargs_mel)
-        mel_spectogram = np.log(mel_spectogram)
-        mel_spectogram = self.standardize_function(mel_spectogram)
-        return mel_spectogram
-
-    def convert2mfcc(self, audio):
-        mfcc = librosa.feature.mfcc(y=audio, **self._default_spec_kwargs_mfcc)
-        mfcc = self.standardize_function(mfcc)
-        return mfcc
 
     def convert2delta_2(self, features):
         features = np.expand_dims(features, 1)
@@ -140,7 +87,8 @@ class Audio2Spikes:
         """
 
         features = torch.from_numpy(features)
-        spikes = spikegen.latency(features, num_steps=self.num_steps, normalize=True, linear=True)
+        spikes = spikegen.latency(
+            features, num_steps=self.num_steps, normalize=True, linear=True)
         return spikes
 
     def convert(self):
@@ -150,27 +98,15 @@ class Audio2Spikes:
             spikes: a int8 numpy array of events of shape (num_samples, input_size, timestamps)
             labels: a int8 numpy array of events of shape (num_samples)
         """
-        print(f'Converting {self.feature_type} to spikes using {self.conversion_type} ecoding...')
-        spikes_array = []
-        labels_array = []
-        for filename in tqdm(glob(self.audio_dir)):
-            audio = make_standard_length(filename, nr_seconds=4)
-            features = self.convert2features(audio)
+        print(f'Converting {self.feature_type} to spikes using {
+              self.conversion_type} ecoding...')
 
-            label = get_label(filename)
-            spikes = self.convert2spikes(features)
+        features = np.load(self.features_path)
+        spikes = self.convert2spikes(features)
 
-            spikes_array.append(spikes)
-            labels_array.append(label)
-
-        spikes_array = np.concatenate(spikes_array, axis=1)
-        labels_array = np.stack(labels_array, axis=0)
-
-        np.save(self.spikes_path, spikes_array)
-        np.save(self.labels_path, labels_array)
+        np.save(self.spikes_path, spikes)
 
         print('Spikes saved successfully in', self.spikes_path)
-        print('Labels saved successfully in', self.labels_path)
 
 
 def main():
@@ -183,7 +119,8 @@ def main():
         print("Usage: python3 convert_to_spikes.py <feature> <encoding>")
         print("Please provide two arguments when running the script.")
         print("Available arguments for feature:", ", ".join(available_feature))
-        print("Available arguments for encoding:", ", ".join(available_encoding))
+        print("Available arguments for encoding:",
+              ", ".join(available_encoding))
         return
 
     selected_feature_type = sys.argv[1]
@@ -191,7 +128,7 @@ def main():
 
     a2s = Audio2Spikes(conversion_type=selected_conversion_type,
                        feature_type=selected_feature_type,
-                       audio_dir='../data/trimmedData/*.wav')
+                       audio_dir='../../data/trimmedData/*.wav')
     a2s.convert()
 
 
