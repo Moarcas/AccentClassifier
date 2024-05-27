@@ -1,4 +1,5 @@
 from glob import glob
+import librosa
 from tqdm import tqdm
 import seaborn
 import wave
@@ -177,8 +178,29 @@ def plot_mfcc_distributions():
     plt.show()
 
 
+def plot_audio_signal():
+    plot_path_audio_signal = '../../plots/audio_signal'
+    audio_file = '../../data/trimmeddata/american_s01_001.wav'
+    signal, sr = librosa.load(audio_file)
+
+    plt.figure()
+    plt.plot(signal)
+    plt.xlabel('Time')
+    plt.ylabel('Amplitude')
+    plt.savefig(plot_path_audio_signal)
+    plt.plot()
+    plt.show()
+
+
+def plot_audio_mfcc():
+    plot_path_audio_signal = '../../plots/audio_spectogram'
+    audio_file = '../../data/trimmeddata/american_s01_001.wav'
+    signal, sr = librosa.load(audio_file)
+
+
 # plot_length_distribution_trimmeddata()
 # plot_length_distribution_rawdata()
 # plot_languages_distribution()
 # plot_PCA()
-plot_mfcc_distributions()
+#plot_mfcc_distributions()
+plot_audio_signal()
