@@ -180,21 +180,18 @@ def plot_mfcc_distributions():
 
 def plot_audio_signal():
     plot_path_audio_signal = '../../plots/audio_signal'
-    audio_file = '../../data/trimmeddata/american_s01_001.wav'
+    audio_file = '../../data/trimmedData/american_s01_001.wav'
     signal, sr = librosa.load(audio_file)
 
-    plt.figure()
-    plt.plot(signal)
-    plt.xlabel('Time')
-    plt.ylabel('Amplitude')
+    plt.figure(figsize=(18, 8))
+    librosa.display.waveshow(signal, sr=sr, alpha=0.5)
     plt.savefig(plot_path_audio_signal)
-    plt.plot()
     plt.show()
 
 
 def plot_audio_mfcc():
     plot_path_audio_signal = '../../plots/audio_spectogram'
-    audio_file = '../../data/trimmeddata/american_s01_001.wav'
+    audio_file = '../../data/trimmedData/american_s01_001.wav'
     signal, sr = librosa.load(audio_file)
 
 
