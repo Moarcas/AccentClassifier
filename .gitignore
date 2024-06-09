@@ -1,6 +1,7 @@
 data/
 snn-tha/
 code/preprocessing/.venv/
+code/powerProfiling/.venv/
 code/preprocessing/__pycache__/
 documentatie
 images/

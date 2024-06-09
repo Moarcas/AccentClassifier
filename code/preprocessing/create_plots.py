@@ -37,15 +37,15 @@ def get_lengths_list(audio_path):
 
 
 def plot_length_distribution_rawdata():
-    audio_path = '../data/rawdata/**/*.wav'
-    plot_path = '../plots/rawAudioLengths'
+    audio_path = '../../data/rawdata/**/*.wav'
+    plot_path = '../../plots/rawAudioLengths'
     lengths = get_lengths_list(audio_path)
     plot_length_distribution(lengths, plot_path)
 
 
 def plot_length_distribution_trimmeddata():
-    audio_path = '../data/trimmedData/*.wav'
-    plot_path = '../plots/trimmedAudioLengths'
+    audio_path = '../../data/trimmedData/*.wav'
+    plot_path = '../../plots/trimmedAudioLengths'
     lengths = get_lengths_list(audio_path)
     plot_length_distribution(lengths, plot_path)
 
@@ -195,9 +195,9 @@ def plot_audio_mfcc():
     signal, sr = librosa.load(audio_file)
 
 
-# plot_length_distribution_trimmeddata()
+plot_length_distribution_trimmeddata()
 # plot_length_distribution_rawdata()
 # plot_languages_distribution()
 # plot_PCA()
 #plot_mfcc_distributions()
-plot_audio_signal()
+#plot_audio_signal()
