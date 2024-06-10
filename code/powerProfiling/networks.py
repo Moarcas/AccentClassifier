@@ -64,40 +64,23 @@ class SNN_mfcc(nn.Module):
 
         self.fc1 = nn.Linear(in_features=13, out_features=128)
         self.lif1 = snn.Leaky(beta=0.9, learn_beta=True,
-                              threshold=1, learn_threshold=True)
+                              threshold=1.0, learn_threshold=True)
 
         self.fc2 = nn.Linear(in_features=128, out_features=9)
         self.lif2 = snn.Leaky(beta=0.9, learn_beta=True,
-                              threshold=1, learn_threshold=True)
+                              threshold=1.0, learn_threshold=True)
+        self.reset()
 
     def forward(self, x):
-        # Initialize hidden states and outputs at t=0
-        mem1 = self.lif1.init_leaky()
-        mem2 = self.lif2.init_leaky()
+        cur1 = self.fc1(x)
+        spk1, self.mem1 = self.lif1(cur1, self.mem1)
 
-        # Record the final layer over time
-        mem_rec = []
-        spk_rec = []
+        cur2 = self.fc2(spk1)
+        spk2, self.mem2 = self.lif2(cur2, self.mem2)
 
-        # time-loop
-        for step in range(self.time_steps):
-            cur1 = self.fc1(x[:, :, step])
-            assert cur1.shape == (self.B, 128)
-            spk1, mem1 = self.lif1(cur1, mem1)
-            assert spk1.shape == (self.B, 128)
+        return spk2, self.mem2
 
-            cur2 = self.fc2(spk1)
-            assert cur2.shape == (self.B, 9)
-            spk2, mem2 = self.lif2(cur2, mem2)
-            assert spk2.shape == (self.B, 9)
-
-            spk_rec.append(spk2)
-            mem_rec.append(mem2)
-
-        spk_rec = torch.stack(spk_rec, dim=0)
-        mem_rec = torch.stack(mem_rec, dim=0)
-
-        assert spk_rec.shape == (self.time_steps, self.B, 9)
-        assert mem_rec.shape == (self.time_steps, self.B, 9)
-
-        return spk_rec, mem_rec
+    def reset(self):
+        # Initialize the hidden states of LIFs
+        self.mem1 = self.lif1.init_leaky()
+        self.mem2 = self.lif2.init_leaky()

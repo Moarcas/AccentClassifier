@@ -5,9 +5,10 @@ import os.path
 
 
 class AudioDataset(Dataset):
-    def __init__(self, data_filepath, labels_filepath):
+    def __init__(self, data_filepath, labels_filepath, batch_size):
         self.data = np.load(data_filepath)
-        self.data = np.expand_dims(self.data, axis=1)
+        if batch_size == 64:
+            self.data = np.expand_dims(self.data, axis=1)
         self.labels = np.load(labels_filepath)
 
     def __len__(self):
@@ -25,7 +26,8 @@ def save_batch(feature_type, batch_size):
     labels_path = '../../data/arrays/labels.npy'
 
     dataset = AudioDataset(data_filepath=features_path,
-                           labels_filepath=labels_path)
+                           labels_filepath=labels_path,
+                           batch_size=batch_size)
 
     # split the dataset into three parts (train 70%, test 15%, validation 15%)
     test_size = 0.15

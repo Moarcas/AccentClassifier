@@ -18,13 +18,14 @@ def get_estimation_CNN_mfcc():
 
     energy_per_synapse_event = 8.6e-9
     energy_per_neuron_event = 8.6e-9
-    DeviceProfileRegistry.add_device("cpu-test2", energy_per_synapse_event,
+    DeviceProfileRegistry.add_device("vn", energy_per_synapse_event,
                                      energy_per_neuron_event,
                                      True)
 
     # get the layer summaries
     summary_list = estimate_energy(model=model, input_data=batch,
-                                   devices="cpu-test2",
+                                   devices="vn",
+                                   network_requires_last_dim_as_time=False,
                                    include_bias_term_in_events=False)
 
     print(summary_list)
@@ -36,13 +37,14 @@ def get_estimation_CNN_amplitude():
 
     energy_per_synapse_event = 8.6e-9
     energy_per_neuron_event = 8.6e-9
-    DeviceProfileRegistry.add_device("cpu-test2", energy_per_synapse_event,
+    DeviceProfileRegistry.add_device("vn", energy_per_synapse_event,
                                      energy_per_neuron_event,
                                      False)
 
     # get the layer summaries
     summary_list = estimate_energy(model=model, input_data=batch,
-                                   devices="cpu-test2",
+                                   devices="vn",
+                                   network_requires_last_dim_as_time=False,
                                    include_bias_term_in_events=False)
 
     print(summary_list)
@@ -52,22 +54,24 @@ def get_estimation_SNN_mfcc():
     model = SNN_mfcc()
     batch = get_batch(feature_type='mfcc', batch_size=128)
 
-    energy_per_synapse_event = 8.6e-9
-    energy_per_neuron_event = 8.6e-9
-    DeviceProfileRegistry.add_device("cpu-test2", energy_per_synapse_event,
+    energy_per_synapse_event = 1e-9
+    energy_per_neuron_event = 1e-9
+
+    DeviceProfileRegistry.add_device("neuromorphic", energy_per_synapse_event,
                                      energy_per_neuron_event,
-                                     False)
+                                     True)
 
     # get the layer summaries
-    summary_list = estimate_energy(model=model, input_data=batch,
-                                   devices="cpu-test2",
-                                   include_bias_term_in_events=False)
+    summary_list_neuromorphic = estimate_energy(model=model,
+                                                input_data=batch,
+                                                devices="neuromorphic",
+                                                network_requires_last_dim_as_time=True,
+                                                include_bias_term_in_events=True)
+    print('Neuromorphic arhitecture', summary_list_neuromorphic)
 
-    print(summary_list)
 
+get_estimation_CNN_mfcc()
 
-# get_estimation_CNN_mfcc()
-
-# get_estimation_CNN_amplitude()
+get_estimation_CNN_amplitude()
 
 get_estimation_SNN_mfcc()
