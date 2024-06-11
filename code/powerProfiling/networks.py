@@ -84,3 +84,33 @@ class SNN_mfcc(nn.Module):
         # Initialize the hidden states of LIFs
         self.mem1 = self.lif1.init_leaky()
         self.mem2 = self.lif2.init_leaky()
+
+
+def get_CNN_mfcc():
+    model = CNN_mfcc()
+
+    model_state_path = '../../data/models/CNN_mfcc_parameters.pth.tar'
+    checkpoint = torch.load(model_state_path, map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['state_dict'])
+
+    return model
+
+
+def get_CNN_amplitude():
+    model = CNN_amplitude()
+
+    model_state_path = '../../data/models/CNN_amplitude_parameters.pth.tar'
+    checkpoint = torch.load(model_state_path, map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['state_dict'])
+
+    return model
+
+
+def get_SNN_mfcc():
+    model = SNN_mfcc()
+
+    model_state_path = '../../data/models/SNN_mfcc_parameters.pth.tar'
+    checkpoint = torch.load(model_state_path, map_location=torch.device('cpu'))
+    model.load_state_dict(checkpoint['state_dict'])
+
+    return model

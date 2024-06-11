@@ -1,19 +1,12 @@
-import torch
-import numpy as np
-import pytest
+import sys
 from snntorch.energy_estimation.estimate_energy import estimate_energy
 from snntorch.energy_estimation.device_profile_registry import DeviceProfileRegistry
-from snntorch.energy_estimation.layer_parameter_event_calculator import (LayerParameterEventCalculator,
-                                                                         synapse_neuron_count_for_linear,
-                                                                         count_events_for_linear)
-
-
 from dataUtils import get_batch
-from networks import CNN_mfcc, CNN_amplitude, SNN_mfcc
+from networks import get_CNN_mfcc, get_CNN_amplitude, get_SNN_mfcc
 
 
 def get_estimation_CNN_mfcc():
-    model = CNN_mfcc()
+    model = get_CNN_mfcc()
     batch = get_batch(feature_type='mfcc', batch_size=64)
 
     energy_per_synapse_event = 8.6e-9
@@ -32,7 +25,7 @@ def get_estimation_CNN_mfcc():
 
 
 def get_estimation_CNN_amplitude():
-    model = CNN_amplitude()
+    model = get_CNN_amplitude()
     batch = get_batch(feature_type='amplitude', batch_size=64)
 
     energy_per_synapse_event = 8.6e-9
@@ -51,7 +44,7 @@ def get_estimation_CNN_amplitude():
 
 
 def get_estimation_SNN_mfcc():
-    model = SNN_mfcc()
+    model = get_SNN_mfcc()
     batch = get_batch(feature_type='mfcc', batch_size=128)
 
     energy_per_synapse_event = 1e-9
@@ -70,8 +63,23 @@ def get_estimation_SNN_mfcc():
     print('Neuromorphic arhitecture', summary_list_neuromorphic)
 
 
-get_estimation_CNN_mfcc()
+def main():
+    available_models = ['CNN_mfcc', 'CNN_amplitude', 'SNN_mfcc']
+    if len(sys.argv) != 2 or sys.argv[1] not in available_models:
+        print("Usage: python3 convert_to_spikes.py <feature> <encoding>")
+        print("Please provide one argument when running the script.")
+        print("Available arguments for models:", ", ".join(available_models))
+        return
 
-get_estimation_CNN_amplitude()
+    model_type = sys.argv[1]
 
-get_estimation_SNN_mfcc()
+    if model_type == 'CNN_mfcc':
+        get_estimation_CNN_mfcc()
+    elif model_type == 'CNN_amplitude':
+        get_estimation_CNN_amplitude()
+    else:
+        get_estimation_SNN_mfcc()
+
+
+if __name__ == '__main__':
+    main()
