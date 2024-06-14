@@ -5,9 +5,9 @@ import os.path
 
 
 class AudioDataset(Dataset):
-    def __init__(self, data_filepath, labels_filepath, batch_size):
+    def __init__(self, data_filepath, labels_filepath, batch_size, arhitecture):
         self.data = np.load(data_filepath)
-        if batch_size == 64:
+        if arhitecture == 'cnn':
             self.data = np.expand_dims(self.data, axis=1)
         self.labels = np.load(labels_filepath)
 
@@ -20,14 +20,27 @@ class AudioDataset(Dataset):
         return data, label
 
 
-def save_batch(feature_type, batch_size):
+def normalize(data):
+    data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
+    return data
+
+
+def mean_variance_normalization(data):
+    mean = np.mean(data, axis=0, keepdims=True)
+    std = np.std(data, axis=0, keepdims=True)
+    normalized_data = (data - mean) / std
+    return normalized_data
+
+
+def save_batch(feature_type, batch_size, arhitecture):
     features_path = f'../../data/arrays/{feature_type}_features.npy'
-    batch_file = f'../../data/arrays/{feature_type}_batch_{batch_size}.npy'
+    batch_file = f'../../data/arrays/{feature_type}_batch_{batch_size}_{arhitecture}.npy'
     labels_path = '../../data/arrays/labels.npy'
 
     dataset = AudioDataset(data_filepath=features_path,
                            labels_filepath=labels_path,
-                           batch_size=batch_size)
+                           batch_size=batch_size,
+                           arhitecture=arhitecture)
 
     # split the dataset into three parts (train 70%, test 15%, validation 15%)
     test_size = 0.15
@@ -52,16 +65,16 @@ def save_batch(feature_type, batch_size):
     np.save(batch_file, batch.detach().numpy())
 
 
-def get_batch(feature_type, batch_size):
+def get_batch(feature_type, batch_size, arhitecture):
     if feature_type == 'amplitude':
-        batch_file = f'../../data/arrays/amplitude_batch_{batch_size}.npy'
+        batch_file = f'../../data/arrays/amplitude_batch_{batch_size}_{arhitecture}.npy'
     elif feature_type == 'mfcc':
-        batch_file = f'../../data/arrays/mfcc_batch_{batch_size}.npy'
+        batch_file = f'../../data/arrays/mfcc_batch_{batch_size}_{arhitecture}.npy'
     else:
         print('Invalid argument')
         return None
 
     if not os.path.isfile(batch_file):
-        save_batch(feature_type, batch_size)
+        save_batch(feature_type, batch_size, arhitecture)
 
     return torch.from_numpy(np.load(batch_file))

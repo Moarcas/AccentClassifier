@@ -7,7 +7,7 @@ from networks import get_CNN_mfcc, get_CNN_amplitude, get_SNN_mfcc
 
 def get_estimation_CNN_mfcc():
     model = get_CNN_mfcc()
-    batch = get_batch(feature_type='mfcc', batch_size=64)
+    batch = get_batch(feature_type='mfcc', batch_size=64, arhitecture='cnn')
 
     energy_per_synapse_event = 8.6e-9
     energy_per_neuron_event = 8.6e-9
@@ -19,14 +19,14 @@ def get_estimation_CNN_mfcc():
     summary_list = estimate_energy(model=model, input_data=batch,
                                    devices="vn",
                                    network_requires_last_dim_as_time=False,
-                                   include_bias_term_in_events=False)
+                                   include_bias_term_in_events=True)
 
     print(summary_list)
 
 
 def get_estimation_CNN_amplitude():
     model = get_CNN_amplitude()
-    batch = get_batch(feature_type='amplitude', batch_size=64)
+    batch = get_batch(feature_type='amplitude', batch_size=64, arhitecture='cnn')
 
     energy_per_synapse_event = 8.6e-9
     energy_per_neuron_event = 8.6e-9
@@ -38,18 +38,17 @@ def get_estimation_CNN_amplitude():
     summary_list = estimate_energy(model=model, input_data=batch,
                                    devices="vn",
                                    network_requires_last_dim_as_time=False,
-                                   include_bias_term_in_events=False)
+                                   include_bias_term_in_events=True)
 
     print(summary_list)
 
 
 def get_estimation_SNN_mfcc():
     model = get_SNN_mfcc()
-    batch = get_batch(feature_type='mfcc', batch_size=128)
+    batch = get_batch(feature_type='mfcc', batch_size=64, arhitecture='snn')
 
     energy_per_synapse_event = 1e-9
     energy_per_neuron_event = 1e-9
-
     DeviceProfileRegistry.add_device("neuromorphic", energy_per_synapse_event,
                                      energy_per_neuron_event,
                                      True)

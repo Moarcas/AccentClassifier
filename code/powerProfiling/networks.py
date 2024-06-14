@@ -60,7 +60,7 @@ class SNN_mfcc(nn.Module):
         super().__init__()
 
         self.time_steps = 345
-        self.B = 128
+        self.B = 64
 
         self.fc1 = nn.Linear(in_features=13, out_features=128)
         self.lif1 = snn.Leaky(beta=0.9, learn_beta=True,
