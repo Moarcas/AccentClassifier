@@ -1,0 +1,119 @@
+\chapter{Setul de date}
+
+\section{Descriere}
+
+Pentru antrenarea rețelelor neuronale, am utilizat baza de date AccentDB \cite{accentDB}. Aceasta conține aproximativ 20 de ore de date audio, înregistrate la o frecvență de 22050 Hz. Înregistrările audio sunt etichetate cu 9 accente distincte:
+
+\begin{itemize}
+\item patru accente non-native: Bangla, Malayalam, Odiya și Telugu.
+\item un accent indian metropolitan.
+\item patru accente native: American, Australian, British și Welsh.
+\end{itemize}
+
+Cele patru accente non-native au fost înregistrate de persoane cu accent pronunțat, în timp ce restul accentelor au fost generate de sistemul text-to-speech Amazon Polly.
+
+Distribuția datelor în funcție de accent poate fi vizualizată în Figura \ref{fig:distributiaAccentelor}, iar detalii suplimentare despre dimensiunea setului se regăsesc în Figura \ref{fig:tabelDate}.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/analiza-date/tabel-baza-de-date.png}
+    \caption{Datele din baza de date accentDB - Sursa \cite{accentDB}}
+    \label{fig:tabelDate}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/analiza-date/distributie-accente.png}
+    \caption{Distribuția accentelor}
+    \label{fig:distributiaAccentelor}
+\end{figure}
+
+
+\section{Preprocesarea datelor}
+
+În urma analizei datelor audio, am observat că multe înregistrări conțineau pauze la început și la final. Deoarece aceste pauze nu oferă informații relevante pentru clasificarea accentelor, am creat și utilizat scriptul Python \texttt{remove\_silence.py}, care elimină segmentele de semnal audio în care amplitudinea nu atinge un anumit prag. Diferențele dintre distribuția lungimii înregistrărilor audio cu și fără pauze pot fi observate în Figurile \ref{fig:distribuatiaLungimilor1} și \ref{fig:distribuatiaLungimilor2}.
+
+\begin{figure}
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=\linewidth]{images/analiza-date/distributie-lungimi-cu-pauze.png}
+     \caption{Distribuția lungimilor datelor audio cu pauze}\label{fig:distribuatiaLungimilor1}
+   \end{minipage}\hfill
+   \begin{minipage}{0.48\textwidth}
+     \centering
+     \includegraphics[width=\linewidth]{images/analiza-date/distributie-lungimi-fara-pauze.png}
+     \caption{Distribuția lungimilor datelor audio fără pauze}\label{fig:distribuatiaLungimilor2}
+   \end{minipage}
+\end{figure}
+
+Al doilea pas în preprocesarea datelor a constat în uniformizarea duratei înregistrărilor audio. În cazul înregistrărilor mai scurte, acestea au fost repetate pentru a atinge dimensiunea dorită, iar în cazul celor mai lungi, au fost tăiate. Dimensiunea aleasă trebuie să fie o balanța între a nu pierde informații prin tăiere și a nu introduce redundanță prin repetare. Ținând cont de distribuția lungimilor, dimensiunea aleasă a fost de patru secunde. Deoarece datele audio au fost înregistrate la 22050 Hz, fiecare fișier audio a avut după preprocesare 88200 de elemente.
+
+Pentru a observa diferențele dintre accente, am redus dimensiunea datelor utilizând analiza componentelor principale (PCA). Am reprezentat grafic cele trei componente principale rezultate din fiecare înregistrare, facilitând vizualizarea separării dintre accente, așa cum se poate observa în Figura \ref{fig:pca}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.85]{images/analiza-date/comparatie-accente-pca.png}
+\caption{Reprezentarea PCA a datelor pentru diferite accente}
+\label{fig:pca}
+\end{figure}
+
+
+\section{Extragerea trăsăturilor}
+
+Pentru extragerea trăsăturilor din datele audio, am utilizat biblioteca Librosa din Python. Cele trei trăsături extrase sunt: amplitudinea, spectrograma Mel și coeficienții cepstrali.
+
+Scriptul folosit pentru generarea acestor trăsături este \texttt{convert\_to\_features.py}. Acesta acceptă un parametru care specifică tipul trăsăturilor dorite: amplitude, mel sau mfcc.
+
+
+\subsubsection{Amplitudinea}
+
+Una dintre problemele asociate utilizării amplitudinii ca trăsătură este numărul mare de dimensiuni în comparație cu numărul de înregistrări, un fenomen cunoscut sub numele de blestemul dimensionalității. Pentru a evita această problemă, am efectuat o reducere a dimensiunii prin subeșantionarea înregistrărilor audio. Am redus rata de eșantionare de la 22050 Hz la 16000 Hz, reducând astfel dimensiunea input-ului de la 88200 elemente la 64000 de elemente. Această reducere nu doar că ajută la diminuarea complexității datelor, dar și îmbunătățește eficiența procesării și antrenării modelelor.
+
+
+\subsubsection{Spectrograma Mel}
+
+Dimensiunea ferestrei și dimensiunea pasului pentru algoritmul STFT au fost setate la 512 și, respectiv, 256, iar numărul benzilor Mel a fost ales 20. Numărul ferestrelor este dat de dimensiunea semnalului împărțită la dimensiunea pasului, adică $88200 / 256 \approx$ 345. Fiecare fereastră are 20 de benzi Mel, rezultând o matrice de dimensiune (345, 20).
+
+
+\subsubsection{Coeficienții cepstrali}
+
+Am extras 13 coeficienți cepstrali utilizând aceiași parametri menționați anterior pentru spectrograma Mel. În urma transformării, fiecare înregistrare a generat o matrice de dimensiune (345, 13).
+
+
+\section{Transformarea trăsăturilor în spike-uri}
+
+Prin utilizarea programului \texttt{convert\_to\_spikes.py}, trăsăturile extrase sunt convertite în date spike. Programul acceptă doi parametrii: tipul trăsăturilor (amplitudine, spectrogramă Mel sau coeficienți cepstrali) și tipul de codare utilizat (rate coding, latency coding sau delta modulation).
+
+
+\section{Pregătirea datelor pentru antrenarea rețelelor}
+
+Pentru a reprezenta datele împreună cu etichetele asociate, am creat o clasă denumită \texttt{AudioDataset}. Aceasta facilitează stocarea și manipularea datelor într-un mod organizat.
+
+
+\subsubsection{Setul de antrenare, validare si testare}
+
+Am împărțit setul de date în trei subseturi distincte:
+
+\begin{itemize}
+\item \textbf{Setul de antrenare (70\%)}: Utilizat pentru antrenarea modelelor.
+\item \textbf{Setul de validare (15\%)}: Folosit pentru evaluarea performanței modelelor în timpul antrenării și pentru ajustarea hiperparametrilor.
+\item \textbf{Setul de testare (15\%)}: Utilizat pentru evaluarea performanței finale a modelelor după finalizarea antrenării.
+\end{itemize}
+
+
+\subsubsection{Normalizarea datelor}
+
+Normalizarea datelor a fost realizată prin două metode:
+
+\begin{itemize}
+\item \textbf{Min-max}: Datele au fost scalate în intervalul [0, 1].
+\item \textbf{Standard score}: Datele au fost transformate astfel încât media să fie 0 și deviația standard să fie 1.
+\end{itemize}
+
+Normalizarea a fost efectuată separat pentru fiecare subset pentru a evita introducerea informațiilor din seturile de test și validare în setul de antrenare. Această practică este esențială pentru a asigura că modelele nu beneficiază de cunoașterea prealabilă a datelor de testare sau validare, ceea ce ar duce la rezultate nerealiste. Deși aceste metode de normalizare nu au oferit rezultate superioare semnificative în toate cazurile, ele au contribuit la stabilizarea procesului de antrenare.
+
+
+\subsubsection{Crearea batch-urilor}
+
+În modelele implementate, am utilizat batch-uri cu dimensiunea de 64 de exemple. Aceste batch-uri au fost create folosind clasa \texttt{DataLoader} din PyTorch. Utilizarea batch-urilor este esențială pentru a gestiona eficient memoria și pentru a optimiza procesul de antrenare.

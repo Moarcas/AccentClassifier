@@ -1,0 +1,258 @@
+\chapter{Modele dezvoltate}
+
+
+\section{Rețea neurală convoluțională antrenată cu amplitudinile semnalelor}
+
+\subsection{Introducere}
+
+Semnalul audio conține variații ale amplitudinii în timp, iar procesul de convoluție este esențial pentru captarea schimbărilor locale din sunet. Aceasta abilitate de a detecta și analiza caracteristicile locale ale semnalului audio ajută semnificativ în clasificarea accentelor.
+ 
+
+\subsection{Arhitectura rețelei}
+
+Arhitectura rețelei neurale convoluționale utilizate pentru antrenarea cu amplitudinile semnalelor constă din două straturi convoluționale, două straturi de max-pooling și două straturi complet conectate. 
+
+Primul strat convoluțional utilizează 32 de filtre cu o dimensiune de 100 × 100. Al doilea strat convoluțional folosește 16 filtre cu o dimensiune de 100 x 100.
+
+După fiecare strat convoluțional, este aplicat un strat de max-pooling cu o fereastră de 
+2 × 2 și un stride de 2. Acest lucru reduce dimensiunea spațială a caracteristicilor extrase, păstrând în același timp informațiile esențiale.
+
+În continuare, rețeaua include două straturi complet conectate. Primul strat complet conectat are 512 de neuroni și utilizează funcția de activare ReLU. Al doilea strat complet conectat conține 9 neuroni și servește drept strat de ieșire. Pentru a reduce overfitting-ul, tehnica dropout este aplicată după fiecare strat complet conectat, dezactivând aleatoriu 50\% dintre neuroni în timpul antrenării.
+
+Funcția de cost utilizată pentru clasificare este cross-entropy loss. Optimizatorul ales pentru antrenare este Adam, cu o rată de învățare de 0.001.
+
+
+\subsection{Evaluarea rețelei}
+
+\subsubsection{Performanță}
+
+După 15 epoci de antrenare, rețeaua neurală a atins o acuratețe de 98.4\% pe setul de test. Figura \ref{fig:acuratete_CNN_amplitude}
+ prezintă evoluția acurateței și a loss-ului în timpul antrenării.
+
+Pentru o înțelegere mai profundă a performanței modelului, este util să examinăm precizia și recall-ul acestuia. Tabelul \ref{tab:precizie_recall_CNN_amplitude} oferă rezultatele pentru aceste metrici.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metrica} & \textbf{Valoare} \\
+        \midrule
+        Macro Precision & 0.9918 \\
+        Macro Recall    & 0.9858 \\
+        % Micro Precision & 0.9875 \\
+        % Micro Recall    & 0.9875 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Precizia si recall-ul rețelei neurale convoluționale antrenată cu amplitudinile semnalului audio}
+    \label{tab:precizie_recall_CNN_amplitude}
+\end{table}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/modele/CNN-amplitudine-acuratete.png}
+    \caption{Acuratețea si loss-ul in timpul antrenării rețelei neurale convoluționale cu amplitudinile semnalului audio}
+    \label{fig:acuratete_CNN_amplitude}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/modele/CNN-amplitudine-matrice-confuzie.png}
+    \caption{Matricea de confuzie a rețelei neurale convoluționale antrenată cu amplitudinile semnalului audio}
+    \label{fig:matriceConfuzie_CNN_amplitude}
+\end{figure}
+
+În plus, matricea de confuzie, prezentată în Figura \ref{fig:matriceConfuzie_CNN_amplitude}, furnizează o imagine detaliată a modului în care modelul clasifică fiecare clasă în parte.
+
+
+\subsubsection{Consum energetic}
+
+Programul \texttt{estimate\_energy.py CNN\_amplitude} oferă datele obținute despre model, prezentate în Tabelul \ref{tab:energie_SNN_mfcc}.
+
+\begin{table}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    \textbf{Strat} & \textbf{\# Sinapse} & \textbf{\# Neuroni} & \textbf{Rata spike-uri [Hz]} & \textbf{\# Evenimente} & \textbf{\# Spike-uri} & \textbf{Energie consumată [J]} \\ \midrule
+    \textbf{Conv1d}  & & & & & & \\
+    \quad Strat 1   & 3,232              & 0                  & 0.0075                        & 1,727,717,376            & 12,969,969            & 14.9                         \\
+    \quad Strat 2   & 1,638,912          & 0                  & 0.0176                        & 1,178,337,280            & 20,694,094            & 10.1                         \\ \midrule
+    \textbf{Linear}  & & & & & & \\
+    \quad Strat 1   & 3,150,274,560      & 0                  & 0.0925                        & 1,269,768                & 117,405               & 0.0109                       \\
+    \quad Strat 2   & 2,363,904          & 0                  & 0.7407                        & 4,608                    & 3,406                 & 3.96e-05                     \\ \midrule
+    \textbf{Total}  & & & & & & \\
+    CNN amplitudine & 3,154,280,608      & 0                  & 0.0116                        & 2,907,329,032            & 33,784,874            & 25                           \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Consumul energetic al rețelei neurale convoluționale antrenată cu amplitudinile semnalului audio}
+    \label{tab:energie_CNN_amplitude}
+\end{table}
+
+Numărul total de date de antrenare este 12121. Fiecare batch conține 64 de exemple, astfel că într-o epocă se vor procesa aproximativ \( \frac{12121}{64} \approx 189 \) de batch-uri. Modelul consumă 25 Jouli per inferență pentru un batch, deci consumul de energie al rețelei într-o singură epocă este de \( 189 \times 25 \, \text{J} = 4725 \, \text{J} \). Modelul este antrenat pe parcursul a 15 epoci, așadar consumul total de energie estimat pentru antrenarea modelului este de \( 15 \times 4725 \, \text{J} = 70875 \, \text{Jouli} \).
+
+
+\section{Rețea neurală convoluțională antrenată cu coeficienți cepstrali}
+
+\subsection{Introducere}
+
+Rețeaua neurală convoluțională utilizează ca input o matrice de dimensiune (13, 345), care reprezintă evoluția celor 13 coeficienți cepstrali pe parcursul a 345 de pași temporali. Convoluțiile aplicate asupra acestei matrice captează caracteristicile locale ale sunetelor, facilitând astfel recunoașterea accentelor.
+
+\subsection{Arhitectura rețelei}
+
+Rețeaua neurală convoluțională antrenată cu coeficienți cepstrali este compusă din două straturi convoluționale, două straturi de max-pooling și două straturi complet conectate. Funcția de activare utilizată în toate straturile este ReLU.
+
+Primul strat convoluțional conține 32 de filtre de dimensiune 3 x 3, iar al doilea strat convoluțional conține 64 de filtre de dimensiune 3 x 3. Fiecare strat convoluțional este urmat de un strat de max-pooling cu o dimensiune de 2 x 2 și un stride de 2.
+
+În plus, rețeaua include două straturi complet conectate: primul strat conține 512 neuroni, iar al doilea strat conține 9 neuroni, corespunzând claselor de ieșire.
+
+Pentru a preveni supraînvățarea, am aplicat tehnica de regularizare dropout, eliminând aleatoriu 50\% din neuroni în timpul antrenării.
+
+Funcția de cost utilizată este cross-entropy loss. Optimizatorul ales pentru antrenare este Adam, cu o rată de învățare de 0.0005.
+
+
+\subsection{Evaluarea rețelei}
+
+\subsubsection{Performanță}
+
+Rețeaua neurală a atins o acuratețe de 98.3\% pe setul de test după 15 epoci de antrenare. Evoluția acurateței și a loss-ului în timpul antrenării este prezentată în figura \ref{fig:acuratete_CNN_mfcc}. 
+
+În tabelul \ref{tab:precizie_recall_CNN_mfcc} sunt prezentate cele patru metrici specifice evaluării clasificatorilor multi-clasă: Macro Precision și Macro Recall, iar matricea de confuzie este prezentată în figura \ref{fig:matriceConfuzie_CNN_mfcc}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metrica} & \textbf{Valoare} \\
+        \midrule
+        Macro Precision & 0.9797 \\
+        Macro Recall    & 0.9832 \\
+        % Micro Precision & 0.9851 \\
+        % Micro Recall    & 0.9851 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Precizia si recall-ul rețelei neurale convoluționale antrenată cu coeficienți cepstrali}
+    \label{tab:precizie_recall_CNN_mfcc}
+\end{table}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/modele/CNN-mfcc-acuratete.png}
+    \caption{Acuratețea si loss-ul in timpul antrenării rețelei neurale convoluționale cu coeficienți cepstrali}
+    \label{fig:acuratete_CNN_mfcc}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/modele/CNN-mfcc-matrice-confuzie.png}
+    \caption{Matricea de confuzie a rețelei neurale convoluționale antrenată cu coeficienți cepstrali}
+    \label{fig:matriceConfuzie_CNN_mfcc}
+\end{figure}
+
+
+\subsubsection{Consum energetic}
+
+Programul \texttt{estimate\_energy.py CNN\_mfcc} oferă datele obținute despre model. Acestea se regasesc in tabelul \ref{tab:energie_CNN_mfcc}.
+
+\begin{table}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    \textbf{Strat} & \textbf{\# Sinapse} & \textbf{\# Neuroni} & \textbf{Rata spike-uri [Hz]} & \textbf{\# Evenimente} & \textbf{\# Spike-uri} & \textbf{Energie consumată [J]} \\ \midrule
+    \textbf{Conv2d}  & & & & & & \\
+    \quad Strat 1   & 320              & 0                  & 0.1383                        & 316,811,264            & 43,830,484            & 0.377                         \\
+    \quad Strat 2   & 591,872          & 0                  & 0.759                        & 4,851,105,792            & 3,681,927,168            & 31.7                         \\ \midrule
+    \textbf{Linear}  & & & & & & \\
+    \quad Strat 1   & 14,800,257,024      & 0                  & 0.4047                        & 2,752,520                & 1,113,937               & 0.00958                       \\
+    \quad Strat 2   & 2,363,904          & 0                  & 1.3023                        & 4,608                    & 6,001                 & 5.16e-05                     \\ \midrule
+    \textbf{Total}  & & & & & & \\
+    CNN amplitudine & 14,803,213,120      & 0                  &  0.7208                        & 5,170,674,184            & 3,726,877,590            & 32.1                           \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Consumul energetic al rețelei neurale convoluționale antrenată cu coeficienți cepstrali}
+    \label{tab:energie_CNN_mfcc}
+\end{table}
+
+Numărul total de date de antrenare este 12121. Fiecare batch conține 64 de exemple, astfel că într-o epocă se vor procesa aproximativ \( \frac{12121}{64} \approx 189 \) de batch-uri. Modelul consumă 32.1 Jouli per inferență pentru un batch, deci consumul de energie al rețelei într-o singură epocă este de \( 189 \times 32.1 \, \text{J} = 6066.9 \, \text{J} \). Modelul este antrenat pe parcursul a 15 epoci, așadar consumul total de energie estimat pentru antrenarea modelului este de \( 15 \times 6066.9 \, \text{J} = 91003.5 \, \text{Jouli} \).
+
+
+\section{Rețea neurală spike antrenată cu coeficienți cepstrali}
+
+\subsection{Introducere}
+
+Dimensiunea temporală a datelor audio face rețelele neurale spike deosebit de potrivite pentru clasificarea accentelor. În acest context, rețeaua primește ca input o matrice de dimensiune (13, 345), unde cei 13 coeficienți cepstrali sunt procesați în 345 de pași temporali.
+
+
+\subsection{Arhitectura rețelei}
+
+Rețeaua neurală spike este formată din trei straturi distincte. Primul strat, stratul de input, cuprinde 13 neuroni corespunzători celor 13 coeficienți cepstrali. Al doilea strat este un strat complet conectat, constând din 128 de neuroni de tip Leaky Integrate-And-Fire (LIF). Al treilea strat, de asemenea complet conectat, conține 9 neuroni de tip LIF și reprezintă stratul de ieșire. Acești 9 neuroni din stratul de ieșire sunt responsabili pentru clasificarea finală a accentelor.
+
+Funcția de activare a perceptronului este înlocuită de funcționalitatea neuronului Leaky Integrate-And-Fire. La începutul antrenării, fiecare neuron LIF pornește cu o rată de decadere și un prag stabilite aleatoriu. Pe parcursul antrenării, aceste valori sunt optimizate individual pentru fiecare neuron. Astfel, la finalul antrenării, fiecare neuron va avea o rată de decadere și un prag specific.
+
+Pentru a clasifica o înregistrare audio, rețeaua primește ca input secvențe de 13 coeficienți cepstrali de 345 de ori. Output-ul rețelei este o matrice de dimensiune (9, 345), unde fiecare element indică dacă un neuron din stratul de ieșire a emis sau nu un spike la fiecare dintre cei 345 de pași temporali.
+
+Decodarea output-ului se realizează prin metoda rate coding. Clasa prezisă este determinată de neuronul care a produs cele mai multe spike-uri în cei 345 de pași. Funcția de cost utilizată pentru antrenare este cross-entropy loss, iar optimizatorul folosit este Adam, cu o rată de învățare setată la 0.001.
+
+\subsection{Evaluarea rețelei}
+
+\subsubsection{Performanță}
+
+După 15 epoci de antrenare, rețeaua neurală spike a atins o acuratețe de 96.5\% pe setul de test. În Figura  \ref{fig:acuratete_SNN_mfcc} este prezentată evoluția acurateței și a loss-ului pe parcursul antrenării.
+
+Metricile Macro Precision, Macro Recall, Micro Precision și Micro Recall sunt detaliate în Tabelul \ref{tab:precizie_recall_SNN_mfcc}, iar matricea de confuzie este ilustrată în Figura \ref{fig:matriceConfuzie_SNN_mfcc}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metrica} & \textbf{Valoare} \\
+        \midrule
+        Macro Precision & 0.9478 \\
+        Macro Recall    & 0.9628 \\
+        % Micro Precision & 0.9605 \\
+        % Micro Recall    & 0.9605 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Precizia si recall-ul rețelei spike antrenată cu coeficienți cepstrali}
+    \label{tab:precizie_recall_SNN_mfcc}
+\end{table}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/modele/SNN-mfcc-acuratete.png}
+    \caption{Acuratețea si loss-ul in timpul antrenării rețelei spike}
+    \label{fig:acuratete_SNN_mfcc}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.85\linewidth]{images/modele/SNN-mfcc-matrice-confuzie.png}
+    \caption{Matricea de confuzie a rețelei spike antrenată cu coeficienți cepstrali}
+    \label{fig:matriceConfuzie_SNN_mfcc}
+\end{figure}
+
+\subsubsection{Consum energetic}
+
+Programul \texttt{estimate\_energy.py SNN\_mfcc} oferă datele obținute despre model, prezentate în Tabelul \ref{tab:energie_SNN_mfcc}.
+
+Numărul total de date de antrenare este 12121. Fiecare batch conține 64 de exemple, astfel că într-o epocă se vor procesa aproximativ \( \frac{12121}{64} \approx 189 \) de batch-uri. Modelul consumă  0.0158 Jouli per inferență pentru un batch, deci consumul de energie al rețelei într-o singură epocă este de \( 189 \times 0.0158 \, \text{J} = 2.9862 \, \text{J} \). Modelul este antrenat pe parcursul a 15 epoci, așadar consumul total de energie estimat pentru antrenarea modelului este de \( 15 \times 2.9862 \, \text{J} = 44.8 \, \text{Jouli} \).
+
+\begin{table}[htbp]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    \textbf{Strat} & \textbf{\# Sinapse} & \textbf{\# Neuroni} & \textbf{Rata spike-uri [Hz]} & \textbf{\# Evenimente} & \textbf{\# Spike-uri} & \textbf{Energie consumată [J]} \\ \midrule
+    \textbf{Linear}  & & & & & & \\
+    \quad Strat 1   & 114,688              & 0                  & 0.9995                        & 2,829,345            & 2,827,813            & 0.00283                         \\
+    \quad Strat 2   & 7,4304          & 0                  & 0.4605                        & 25,439,265            & 11,715,399            & 0.0117                         \\ \midrule
+    \textbf{Leaky}  & & & & & & \\
+    \quad Strat 1   & 0      & 8,192                  &  0.4605                        & 2,826,240                & 1,301,366               & 0.0013                      \\
+    \quad Strat 2   & 0          & 576                  & 0.128                         & 198,720                    & 25,430                 & 2.54e-05                     \\ \midrule
+    \textbf{Total}  & & & & & & \\
+    SNN & 188,992      & 8,768                  & 0.5071                        & 31,293,570            & 15,870,008            & 0.0159                           \\ \bottomrule
+    \end{tabular}%
+    }
+    \caption{Consumul energetic al rețelei spike antrenată coeficienți cepstrali}
+    \label{tab:energie_SNN_mfcc}
+\end{table}

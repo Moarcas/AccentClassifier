@@ -1,0 +1,285 @@
+
+\chapter{Preliminarii}
+
+\section{Inteligenta artificiala}
+
+Inteligența artificială (IA) este un domeniu al informaticii care se ocupă cu crearea de sisteme capabile să execute sarcini 
+care, în mod normal, necesită inteligență umană. Acest domeniu a apărut în 1956 și a evoluat prin multiple perioade de 
+optimism, urmate de perioade de scepticism și lipsă de fonduri, cunoscute sub denumirea de "IA winter".
+
+Interesul pentru inteligența artificială a crescut semnificativ în 2012, când tehnicile de învățare profundă (deep learning) s-
+au dovedit a fi superioare altor metode de învățare automată. Un alt moment important a fost în 2017, odată cu apariția 
+transformatoarelor (transformers), care au revoluționat procesarea limbajului natural și alte domenii ale IA.
+
+O ramură importantă a inteligenței artificiale este învățarea automată, care se împarte în două subdomenii principale: 
+învățarea supravegheată și învățarea nesupravegheată. Clasificarea accentelor se realizează prin învățarea supravegheată, 
+deoarece datele audio sunt etichetate. Astfel, această metodă va fi utilizată și prezentată în lucrare.
+
+
+\section{Noțiuni de bază despre rețelele neurale}
+
+Rețelele neurale sunt inspirate din modul de funcționare al creierului uman. Acestea constau în modele care conțin neuroni 
+artificiali interconectați prin legături, numite muchii. Neuronul artificial, cunoscut sub numele de perceptron, este o 
+versiune simplificată a neuronului biologic, iar muchiile dintre aceștia imită sinapsele din creier.
+
+Datorită straturilor multiple de perceptroni, rețelele neurale profunde (deep neural networks) și-au demonstrat performanța 
+prin obținerea unor rezultate remarcabile în diverse domenii, cum ar fi viziunea computerizată (computer vision), 
+recunoașterea vorbirii și procesarea limbajului natural.
+
+În contextul clasificării audio, \textbf{rețelele neurale convoluționale} (CNN) oferă rezultate deosebit de bune. Acestea 
+utilizează straturi convoluționale care permit rețelei să învețe relațiile spațiale și temporale ale datelor audio.
+
+\section{Consumul ridicat de energie al rețelelor neurale}
+
+Este important să luăm în considerare energia necesară pentru antrenarea 
+modelelor de inteligență artificială și să dezvoltăm tehnologii sustenabile și 
+eficiente din punct de vedere computațional. În 2024, Stanford Institute for 
+Human-Centered Artificial Intelligence (HAI) a publicat raportul Artificial 
+Intelligence Index, estimând costul antrenării modelelor Chat-GPT și Google 
+Gemini Ultra la 78 de milioane, respectiv 191 de milioane de dolari 
+\cite{HAI_2024_AI-Index-Report}. De asemenea, Sam Altman, directorul executiv al 
+OpenAI, a menționat că progresul în domeniul inteligenței artificiale nu va 
+depinde de dezvoltarea unor modele mai mari, ci de noi metode de antrenare 
+\cite{wired-sam-altman}.
+
+
+\subsubsection{Limitarea arhitecturii Von Neumann}
+
+Calculatoarele personale moderne utilizează arhitectura \textbf{Von Neumann} (Figura \ref{fig:VonNeumannArhitecure}). În 
+această arhitectură, procesorul este 
+separat de memorie, iar transferul datelor între cele două componente devine un blocaj major atunci când dorim să antrenăm 
+rețele neurale. 
+
+Este contraintuitiv faptul că implementăm concepte de inteligență artificială pe arhitecturi care nu seamănă deloc cu modul de 
+funcționare al creierului. 
+
+
+\subsubsection{Hardware neuromorfic}
+
+Creierul nostru consumă între 12 și 20 de wați, în timp ce un calculator personal consumă aproximativ 175 de wați, iar acceleratoarele, precum Nvidia H100, au un consum cuprins între 300 și 700 de wați \cite{WhyBrainLikeComputersAreHard}. Diferența majora de consum ridică întrebarea dacă ne putem inspira din complexitatea arhitecturală a creierului pentru a îmbunătăți eficiența acestor sisteme în domeniul învățării automate.
+
+Companii precum Intel, IBM și Cyber Swarm din România încearcă să răspundă la aceste întrebări prin dezvoltarea de cipuri neuromorfice, cum ar fi Loihi 2, TrueNorth și Swarm 
+Nervous System. Aceste cipuri sunt proiectate fundamental diferit, fiind inspirate de modul de funcționare al creierului. Scopul lor este de a dezvolta 
+componente hardware optimizate pentru modele de inteligență artificială, obținând astfel o eficiență mult superioară, măsurată în câteva ordine de mărime, 
+față de sistemele convenționale.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-snn/arhitectura-vn.png}
+    \caption{Arhitectura Von Neumann - Sursa \cite{VonNeumann}}
+    \label{fig:VonNeumannArhitecure}
+\end{figure}
+
+
+\section{Introducere în rețelele neurale spike}
+
+Pentru a obține modele de inteligență artificială eficiente, este necesară antrenarea unor rețele neurale speciale pe hardware neuromorfic. Aceste rețele sunt cunoscute sub denumirea de rețele neurale spike.
+
+Principala diferență dintre rețelele neurale tradiționale și cele spike constă în tipul neuronilor utilizați și în modul de comunicare dintre aceștia. În rețelele neurale tradiționale, informația este codificată prin magnitudinea valorilor din rețea, pe când în rețelele spike, informația este codificată în timp, prin succesiunea impulsurilor neurale. Acești neuroni noi introduc astfel o dimensiune temporală în rețea, oferind un mod de procesare mai apropiat de cel al creierului uman.
+
+Pentru a beneficia de avantajele rețelelor neurale spike, este esențial ca acestea să ruleze pe un hardware neuromorfic. În această lucrare, vom simula antrenarea și inferența acestor rețele pe un calculator personal, utilizând biblioteca snnTorch din Python.
+
+
+\section{Noțiuni despre datele audio}
+
+Sunetul este o undă care se propagă prin medii precum aerul sau apa. Acesta poate fi caracterizat prin două proprietăți principale: intensitate și înălțime. Înălțimea sunetului depinde de frecvența vibrațiilor particulelor din aer. Când particulele vibrează de multe ori pe secundă, se produce un sunet de înălțime ridicată (frecvență înaltă), iar când particulele vibrează de puține ori pe secundă, se produce un sunet de înălțime joasă (frecvență joasă). Urechea umană poate percepe sunete într-un interval de frecvențe cuprins între 20 și 20.000 Hz.
+
+Pentru clasificarea sunetului, este esențial să eliminăm informațiile irelevante, cum ar fi zgomotul de fundal sau emoția. Astfel, trebuie să transformăm sunetul pentru a păstra doar informațiile relevante pentru clasificare.
+
+
+\subsection{Amplitudinea}
+
+Amplitudinea reprezintă valoarea variațiilor presiunii aerului generate de undele sonore. O amplitudine mare corespunde unui sunet puternic, în timp ce o amplitudine mică corespunde unui sunet slab.
+
+Pentru a reprezenta sunetul în format digital, microfonul măsoară presiunea aerului la o anumită frecvență de eșantionare. Aceasta se referă la numărul de măsurători efectuate pe secundă pentru a captura variațiile presiunii aerului. În Figura \ref{fig:amplitudineAudio} este prezentat un semnal audio de 4 secunde, eșantionat cu o frecvență de 22.050 Hz. Acest semnal conține 88.200 de eșantioane, deoarece presiunea aerului a fost măsurată de 22.050 ori pe secundă. Pe axa Ox este reprezentat numărul eșantionului, iar pe axa Oy, valoarea amplitudinii fiecărui eșantion. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-audio/semnal-audio.png}
+    \caption{Amplitudinea unui semnal audio de 4 secunde}
+    \label{fig:amplitudineAudio}
+\end{figure}
+
+\subsection{Spectograme}
+
+Spectrogramele reprezintă o modalitate de a vizualiza un sunet în funcție de frecvența sa. Cu ajutorul spectrogramelor, putem determina cum se modifică fiecare frecvență componentă a unui sunet în timp. Calcularea spectrogramelor este inspirată de modul în care funcționează urechea umană, în special melcul osos. În funcție de frecvențele prezente în sunet, melcul osos vibrează în locații diferite și transmite semnale electrice prin nervi, informând creierul despre prezența fiecărei frecvențe.
+
+Spectograma afișează intensitatea diferitelor frecvențe ale unui semnal audio pe parcursul timpului, unde axa orizontală reprezintă timpul, axa verticală reprezintă frecvența, iar intensitatea fiecărei frecvențe este indicată printr-o scară de culori.
+
+\subsection{Spectograma Mel}
+
+Urechea umană percepe frecvențele sunetului în mod logaritmic. De exemplu, diferența dintre 50 Hz și 250 Hz ni se pare mai mare decât diferența dintre 1500 Hz și 1700 Hz, chiar dacă numeric aceste diferențe sunt egale. Spectogramele obișnuite nu reflectă această proprietate a auzului uman, astfel a fost dezvoltată scara Mel pentru a corecta această problemă.
+
+Conversia frecvenței în scara Mel se realizează folosind următoarea formulă:
+
+\begin{equation}
+\text{mel}(f) = 2595 \cdot \log_{10}\left(1 + \frac{f}{700}\right)
+\label{eq:mel_formula}
+\end{equation}
+
+unde:
+\begin{itemize}
+    \item \( \text{mel}(f) \) este frecvența pe scara Mel.
+    \item \( f \) este frecvența în Hz.
+\end{itemize}
+
+Conversia din scara Mel în frecvență se realizează folosind următoarea formulă:
+
+\begin{equation}
+\text{f}(mel) = 700 \left(10^{\frac{\text{mel}}{2595}} - 1\right)
+\label{eq:inverse_mel_formula}
+\end{equation}
+
+unde:
+\begin{itemize}
+    \item \( \text{f}(mel) \) este frecvența în Hz.
+    \item \( mel \) este frecvența pe scara Mel.
+\end{itemize}
+
+Pentru a calcula spectograma Mel sunt necesari urmatorii pasi: calcularea STFT, convertirea amplitudinii la decibeli si convertirea frecventei la scara Mel.
+
+\subsubsection{Pasul 1. Calcularea STFT (short-time Fourier transform)}
+
+Short-time Fourier transform modifică semnalul audio în domeniul timp-frecvență prin calcularea transformatei Fourier a unor intervale scurte și suprapuse din semnal. Acest proces se bazează pe presupunerea că semnalul nu se modifică semnificativ în intervale scurte de timp.
+
+Dacă intervalul este prea mic, nu există suficiente valori pentru a obține o spectrogramă precisă. Pe de altă parte, dacă intervalul este prea mare, semnalul se modifică prea mult, ceea ce poate duce la pierderea informațiilor detaliate despre variațiile frecvențelor în timp. O diagrama a acestui proces poate fi vizualizata in Figura \ref{fig:stftProcess}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-audio/algoritm-stft.png}
+    \caption{STFT - Sursa \cite{stftProcess}}
+    \label{fig:stftProcess}
+\end{figure}
+
+\subsubsection{Pasul 2. Convertirea amplitudinii la decibeli}
+
+Pentru a reprezenta spectrograma într-un mod care reflectă mai bine percepția umană a sunetului, amplitudinile trebuie convertite în decibeli (dB). Decibelii sunt o unitate logaritmică care măsoară intensitatea sunetului, facilitând compararea diferențelor mari de amplitudine.
+
+Conversia amplitudinii \(A\) la decibeli se realizează folosind următoarea formulă:
+
+\[
+A_{dB} = 20 \cdot \log_{10}(A)
+\]
+
+unde:
+\begin{itemize}
+    \item \(A_{dB}\) este amplitudinea în decibeli.
+    \item \(A\) este amplitudinea originală.
+\end{itemize}
+
+Această conversie este esențială pentru a obține o reprezentare precisă a spectrogramelor, deoarece urechea umană nu percepe sunetele în mod liniar.
+
+
+\subsubsection{Pasul 3. Convertirea frecvenței la scara Mel}
+
+Pentru a converti spectrograma la scara Mel sunt necesari următorii pași:
+
+\begin{itemize}
+    \item Se selectează numărul de benzi Mel, notat \( N \). Acest număr poate lua diverse valori, precum 20, 40 sau 128, în funcție de specificul problemei.
+    \item Se convertește cea mai mică frecvență (\( f_{\text{min}} \)) și cea mai mare frecvență (\( f_{\text{max}} \)) în scala Mel folosind formula \eqref{eq:mel_formula}.
+    \item Se generează \( N \) valori egal distanțate în intervalul \([ \text{mel}(f_{\text{min}}), \text{mel}(f_{\text{max}}) ]\).
+    \item Se convertește cele \( N \) valori înapoi în Hz folosind formula \eqref{eq:inverse_mel_formula}.
+    \item Valorile sunt aproximative la cea mai apropiată frecvență.
+    \item Pentru fiecare dintre cele \( N \) frecvențe se aplică filtrul asociat.
+\end{itemize}
+
+În Figura \ref{fig:algoritmMel}, putem observa reprezentarea pașilor 2 și 3 care au ca scop găsirea celor \( N \) frecvențe pe care urechea umană le percepe ca fiind egal distanțate. Se alege frecvența cea mai mică \( f_1 \) și frecvența cea mai mare \( f_8 \), apoi se calculează punctele \(\text{mel}(f_1)\) și \(\text{mel}(f_8)\). În intervalul \([\text{mel}(f_1), \text{mel}(f_8)]\) se generează 3 puncte: mel1, mel2 și mel3, astfel încât distanța dintre ele este egală numeric (\(D_5 = D_6 = D_7 = D_8\)). Convertind aceste trei puncte înapoi în Hz, obținem frecvențe distanțate egal din perspectiva percepției auditive. Deși valorile numerice ale distanțelor \(D_1\), \(D_2\), \(D_3\) și \(D_4\) nu sunt identice, ele sunt percepute ca fiind egale datorită modului în care urechea noastră percepe sunetul.
+
+\begin{figure}
+    \centering
+    \includesvg[width=\linewidth]{images/teorie-audio/algoritm-scara-mel.svg}
+    \caption{Converitrea frecvenței la scara Mel pentru N = 3}
+    \label{fig:algoritmMel}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includesvg[width=\linewidth]{images/teorie-audio/filtre-triunghiulare-scara-mel.svg}
+    \caption{Filtre Mel}
+    \label{fig:filtreTriunghiulareMel}
+\end{figure}
+
+
+În Figura \ref{fig:filtreTriunghiulareMel} este prezentată o diagramă a filtrelor triunghiulare. Aceste filtre au rolul de a redistribui energia frecvențelor către cele trei benzi Mel. Valoarea pentru a treia bandă Mel se determină prin însumarea amplitudinilor frecvențelor ponderate de filtrul frecvenței f5:
+\[ A_{\text{Mel3}} = \sum_{i=1}^{8} A(f_i) \cdot \text{filtrul}_{\text{Mel3},i} \]
+
+
+\subsection{Coeficienți cepstrali}
+
+Mel-Frequency Cepstral Coefficients (MFCC) au fost dezvoltați de o echipă de cercetători din cadrul MIT în anul 1960, inițial pentru studierea semnalelor seismice.
+
+Coeficientii cepstrali sunt utilizați în prezent într-o varietate de aplicații, inclusiv prelucrarea semnalelor audio și învățarea automată.
+
+Pentru a înțelege rolul acestora, este esențial să înțelegem modul în care funcționează vocea umană.
+
+Când comunicăm, sunetul este rezultatul interacțiunii complexe dintre corzile vocale și cavitatea bucală. Corzile vocale generează un sunet inițial cu frecvență înaltă, care este apoi modelat de cavitatea bucală prin care trece. Această cavitate acționează ca un filtru, modificând sunetul produs de corzile vocale. Ideea principală este că sunetele sunt produse prin modelarea cavității bucale, ceea ce determină modificarea frecvențelor din componenta sunetului inițial.
+
+Din această observație, reiese că sunetul produs de o persoană poate fi analizat și descompus în două componente distincte: sunetul inițial generat de corzile vocale și filtrul format de cavitatea bucală. Pentru sistemele de recunoaștere a vorbirii, informațiile relevante se găsesc în mod special în filtrul creat de cavitatea bucală. Sunetul inițial generat de corzile vocale, în sine, nu oferă informații esențiale pentru recunoașterea vorbirii, deoarece nu conține detalii specifice legate de conținutul mesajului transmis. Procesul prin care sunetul este produs poate fi vizualizat in Figura \ref{fig:speechProcess}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-audio/proces-vorbire.png}
+    \caption{Procesul prin care producem sunete - Sursa \cite{speechProcess}}
+    \label{fig:speechProcess}
+\end{figure}
+
+Coeficientii cepstrali sunt utili deoarece furnizează informații esențiale despre vorbitor și conținutul mesajului transmis, preponderent regăsite în filtrul format de cavitatea bucală.
+
+% Formula pentru calculul coeficienților MFCC este dată de:
+
+% \begin{equation}
+% C(x(t)) = F^{-1} \left( \log \left( F(x(t)) \right) \right)
+% \end{equation}
+% unde:
+% \begin{itemize}
+% \item $x(t)$ reprezintă semnalul în domeniul timpului.
+% \item $C(x(t))$ reprezintă coeficienții MFCC ai semnalului $x(t)$.
+% \item $F(x(t))$ reprezintă transformata Fourier a semnalului $x(t)$.
+% \item $F^{-1}$ este transformata Fourier inversă.
+% \item $\log$ reprezintă funcția logaritmică aplicată elementelor transformatei Fourier.
+% \end{itemize}
+
+
+Pentru a converti spectrograma în coeficienți cepstrali, sunt necesari următorii pași:
+
+\begin{itemize}
+    \item Transformăm spectrograma inițială într-o spectrogramă Mel.
+    \item Aplicăm spectrogramei Mel algoritmul Discrete Cosine Transform (DCT).
+\end{itemize}
+
+Algoritmul DCT se folosește pentru a transforma benzile Mel în coeficienți cepstrali. Primii 12-13 coeficienți conțin cea mai relevantă informație despre semnalul audio. De 
+asemenea, algoritmul ajută la reducerea dimensiunii datelor și la decorelarea benzilor Mel. Corelația dintre benzile Mel apare datorită filtrelor triunghiulare suprapuse.
+
+
+\section{Metrici de evaluare}
+
+Pentru a măsura performanța rețelelor neurale dezvoltate în această lucrare, vom utiliza următoarele metrici: acuratețea, matricea de confuzie și consumul energetic.
+
+
+\subsection{Acuratețea}
+
+Acuratețea este una dintre principalele metrici utilizate pentru evaluarea performanței unui model de clasificare. Acuratețea este definită ca procentul de predicții corecte din totalul predicțiilor făcute de model. Formula pentru calcularea acurateței este:
+\[
+\text{Acuratețe} = \frac{\text{TP + TN}}{\text{TP + TN + FP + FN}}
+\]
+
+
+\subsection{Precizia și recall}
+
+Precizia indică procentul de predicții pozitive care sunt corecte, în timp ce recall-ul arată procentul de exemple pozitive care au fost prezise corect. Aceste măsuri pot fi calculate folosind formulele:
+
+\[
+\text{Precizie} = \frac{\text{TP}}{\text{TP + FP}} \quad \quad \text{Recall} = \frac{\text{TP}}{\text{TP + FN}}
+\]
+
+În această lucrare, vom aplica metoda Macro-Averaging, care calculează individual precizia și recall-ul pentru fiecare clasă, iar apoi realizează media acestora.
+
+\subsection{Matricea de confuzie}
+
+Matricea de confuzie este o metrică esențială pentru evaluarea performanței unui model de clasificare multi-clasă. Aceasta prezintă, într-un format tabular, numărul de valori True Positive (TP), True Negative (TN), False Positive (FP) și False Negative (FN), oferind astfel o vedere de ansamblu asupra predicțiilor modelului.
+
+
+\subsection{Consumul energetic}
+
+Pentru a măsura consumul de energie al fiecărei rețele, vom utiliza biblioteca snnTorch. Aceasta ne permite să estimăm consumul energetic al rețelelor neurale artificiale pe arhitectura de tip Von Neumann, precum și al rețelelor neurale de tip spike pe arhitectura neuromorfică. Costul energetic al unei inferențe prin rețea va fi măsurat în Jouli.

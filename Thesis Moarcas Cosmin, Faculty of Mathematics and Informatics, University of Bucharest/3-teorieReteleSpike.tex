@@ -1,0 +1,252 @@
+\chapter{Fundamentele teoretice ale rețelelor neurale spike}
+
+\section{Cele trei proprietăți ale codului neural}
+
+Există multiple teorii privind modul în care creierul 
+codifică informația, fiecare se bazeaza pe trei  
+proprietăți fundamentale: comunicarea prin spike-uri, 
+sparitatea datelor și suprimarea 
+statică. Aceste 
+proprietăți sunt esențiale pentru înțelegerea principiilor de funcționare ale 
+creierului și pentru 
+aplicarea lor în îmbunătățirea eficienței rețelelor neurale artificiale.
+
+\subsection{Spike-uri}
+
+Neuronii biologici comunică prin intermediul impulsurilor electrice numite spike-uri, care au o amplitudine de aproximativ 100 mV. Absența unui spike poate fi reprezentată prin 0, iar prezența unui spike prin 1, acesta fiind unul dintre motivele pentru care rețelele neurale bazate pe spike-uri sunt mai eficiente. În Figura \ref{fig:neuronOutput} putem vizualiza un neuron și modelarea output-ului acestuia sub forma unui tensor.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-snn/neuron-output.png}
+    \caption{Reprezentarea output-ului unui neuron prin intermediul unui tensor - Sursa \cite{neuronOutput}}
+    \label{fig:neuronOutput}
+\end{figure}
+
+Într-o rețea neurală artificială, pentru a transmite activarea unui neuron către alt neuron, este necesară înmulțirea a două numere de înaltă precizie: activarea și greutatea. Această operație nu este eficientă și produce latență. Într-o rețea cu spike-uri, pentru a transmite activarea unui neuron către alt neuron, este necesară doar înmulțirea greutății cu un spike (valoarea 1). Astfel, înmulțirea numerelor de înaltă precizie este înlocuită cu citirea greutății din memorie, ceea ce reduce semnificativ complexitatea și latența operațiilor.
+
+Deși activările din rețelele neurale spike sunt valori discrete de 0 și 1, există diferențe semnificative între acestea și rețelele neurale binarizate. În rețelele neurale spike, momentul apariției spike-urilor este esențial.
+
+
+\subsection{Sparsitatea}
+
+Sparsitatea se referă la proprietatea neuronilor de a rămâne în repaus majoritatea timpului, activările fiind de obicei 0. Datorită acestei proprietăți, putem salva eficient activările neuronilor. În loc să stocăm întregul vector de valori 0 și 1, putem salva doar pozițiile în care au apărut spike-urile (unde valoarea este 1). De exemplu, vectorul [0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1] poate fi înlocuit cu o structură de date care indică pozițiile în care apare valoarea 1: pozițiile 2, 7 și 16.
+
+
+\subsection{Suprimarea statică}
+
+Suprimarea statică reprezintă capacitatea senzorilor de a transmite informații doar atunci când apare ceva nou. În cazul unei camere video obișnuite, videoclipul este alcătuit dintr-o succesiune de imagini capturate la intervale scurte de timp. În schimb, un senzor bazat pe evenimente, cum ar fi senzorul de viziune dinamică (DVS) sau retina de siliciu, transmite informații doar atunci când există o schimbare. Fiecare pixel funcționează independent, capturând și comunicând doar noutățile. În Figura \ref{fig:senzorDVS} se poate observa modul de funcționare al unui senzor bazat pe evenimente. Singurele informații transmise sunt zonele roșii și verzi, deoarece în aceste regiuni se detectează mișcare. Diferenta dintre o camera obisnuita si un senzor bazat pe evenimente este ilustrat in Figura \ref{fig:camera}.
+
+Prin utilizarea senzorului bazat pe evenimente, consumul energetic este redus semnificativ datorită volumului scăzut de date transmise. Acest tip de senzor se concentrează exclusiv pe schimbările relevante din mediu, eliminând necesitatea de a procesa și transmite informații redundante sau statice.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[height=8cm]{images/teorie-snn/senzor-bazat-pe-evenimente.png}
+    \caption{Senzor bazat pe evenimente (DVS) - Sursa \cite{senzorDVS}}
+    \label{fig:senzorDVS}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-snn/comparatie-senzor-normal-bazat-pe-evenimente.png}
+    \caption{Comparație intre o camera convențională și un senzor bazat pe evenimente - Sursa \cite{comparatieSenzori}}
+    \label{fig:camera}
+\end{figure}
+
+
+\section{Modele de neuroni}
+
+Rețelele neurale artificiale și cele bazate pe spike-uri pot modela aceleași arhitecturi de rețele. Diferența dintre ele constă în tipul de neuroni utilizați.
+
+Există numeroase tipuri de neuroni, care variază de la modele complexe, precum modelul Hodgkin-Huxley, până la perceptronul utilizat în rețelele neurale artificiale. Modelele complexe sunt mai plauzibile din punct de vedere biologic, dar au performanțe scăzute. În schimb, perceptronul este un model simplist care a obținut rezultate remarcabile.
+
+Figura \ref{fig:tipuriNeuroni} prezintă spectrul modelelor existente de neuroni. În partea stângă se află modelul cel mai plauzibil din punct de vedere biologic, iar în partea dreaptă se află perceptronul utilizat în fiecare rețea neurală artificială. Modelul "Leaky Integrate-and-Fire" se situează la granița dintre cele două. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{images/teorie-snn/spectru-neuroni.png}
+    \caption{Modele de neuroni - Sursa \cite{modeleNeuroni}}
+    \label{fig:tipuriNeuroni}
+\end{figure}
+
+\subsection{Perceptronul}
+
+Perceptronul reprezintă modelul de neuron utilizat în rețelele neurale artificiale. Inputurile perceptronului sunt înmulțite cu greutățile asociate, iar suma acestor înmulțiri este introdusă în funcția de activare precum sigmoid sau ReLU. Acest model a obținut rezultate impresionante în numeroase domenii ale învățării automate.
+
+\subsection{Neuronul biologic}
+
+Neuronul este celula responsabilă de recepționarea și transmiterea informației prin impulsuri electrice. În structura sa complexă, neuronul include corpulul celular, dendritele și axonul. Structura acestuia se poate observa in figura \ref{fig:neuron}.
+
+
+\subsubsection{Dentritele}
+Dendritele au rolul de a capta semnalele primite de la alți neuroni și de a le transmite către corpul celular. Ele joacă un rol crucial în generarea potențialului de acțiune, care este esențial pentru transmiterea informației în sistemul nervos
+
+
+\subsubsection{Corpul celular}
+Corpul celular, care conține nucleul celulei, împreună cu dendritele formează regiunea receptoare a neuronului. Corpul celular integrează toate informațiile primite de la dendrite și, dacă aceste semnale sunt suficient de puternice, generează un impuls electric numit potențial de acțiune, care este transmis prin axon.
+
+\subsubsection{Axon}
+Axonul face parte din regiunea conducătoare a neuronului și este responsabil de transmiterea potențialului de acțiune de la corpul celular către alți neuroni. La capătul axonului se află terminațiile axonale, care formează sinapse prin conectarea cu dendritele altor neuroni, facilitând astfel comunicarea neurală.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=12cm]{images/teorie-snn/neuron.png}
+    \caption{Structura unui neuron - Sursa: \cite{neuronReseachGate}}
+    \label{fig:neuron}
+\end{figure}
+
+\subsection{Neuronul Leaky Integrate-and-Fire}
+
+Modelul a fost dezvoltat de Louis Lapicque în anul 1907. Lapicque a stimulat nervul piciorului unei broaște cu impulsuri electrice pentru a observa cât stimul este necesar pentru a provoca mișcarea piciorului.
+
+Neuronul Leaky Integrate-and-Fire este inspirat de neuronul biologic și funcționează trimițând un semnal mai departe doar dacă input-ul este suficient de puternic. Deoarece este puțin probabil ca neuronul să primească mai multe spike-uri simultan la un moment dat, este esențială o proprietate de persistență temporală a potențialului membranei pentru a genera spike-uri. Termenul "integrate" se referă la capacitatea acestui model de a acumula și reține valoarea potențialului membranei în timp. "Leaky" se referă la difuzia ionilor prin membrană, ceea ce înseamnă că la fiecare pas de timp, potențialul membranei scade cu o rată \(\beta\).
+
+Neuronul Leaky Integrate-and-Fire se distinge prin potențialul membranei, rata de difuzie \(\beta\) și un prag specific. Similar perceptronului, acest model insumează produsul dintre input și greutăți. Suma obținută se adaugă la potențialul membranei, iar dacă aceasta depășește pragul neuronului, se emite un spike. La fiecare pas de timp, potențialul membranei scade cu o rată \(\beta\), reflectând difuzia ionilor prin membrană.
+
+
+Pentru a înțelege mai bine modul de funcționare al acestui model, vom prezenta pașii executați într-o simulare de \(N\) iterații:
+
+\begin{enumerate}
+    \item \textbf{Inițializare}: Setăm rata de difuzie \(\beta\), pragul \(P\) și potențialul membranei la 0.
+    \item \textbf{Calculul input-ului}: Pentru un input \(X\), calculăm produsul scalar dintre \(X\) și greutățile asociate.
+    \item \textbf{Actualizarea potențialului}: Adăugăm rezultatul de la pasul 2 la potențialul membranei.
+    \item \textbf{Scăderea potențialului}: Potențialul membranei scade prin înmulțirea cu rata \(\beta\).
+    \item \textbf{Emiterea spike-ului}: Dacă potențialul membranei depășește \(P\), neuronul emite un spike, iar potențialul este resetat.
+    \item \textbf{Repetare}: Repetăm pașii 2, 3, 4 și 5 de \(N\) ori.
+\end{enumerate}
+
+Acești pași descriu modul în care neuronul Leaky Integrate-and-Fire procesează informația, acumulează potențialul și emite spike-uri ca răspuns la stimuli.
+
+\subsubsection{Formula pentru potențialul membranei}
+
+\begin{equation}
+\label{eq:formulaPotentialulMembranei}
+U[t] = \beta U[t - 1] + W \cdot X[t] - S_{\text{out}}[t - 1]\theta
+\end{equation}
+unde:
+\begin{itemize}
+    \item \( U[t] \) reprezintă potențialul membranei la momentul de timp \( t \).
+    \item \( \beta \) este rata de difuzie a potențialului.
+    \item \( W \cdot X[t] \) este rezultatul produsului scalar dintre greutățile (\( W \)) și input-urile (\( X[t] \)) neuronului.
+    \item \( \theta \) este threshold-ul neuronului.
+    \item \( S_{\text{out}}[t] \in \{0, 1\} \) reprezintă output-ul neuronului la momentul \( t \).
+    \item \( S_{\text{out}}[t - 1]\theta \) reprezintă condiția în care neuronul a emis un spike și potențialul membranei trebuie resetat.
+\end{itemize}
+
+
+\subsubsection{Determinarea output-ului neuronului}
+
+\begin{equation}
+\label{eq:outputNeuronLIF}
+S_{\text{out}}[t] = \\
+\text{H}(U[t] - \theta) = \begin{cases} 
+1 & \text{dacă } U[t] \geq \theta \\
+0 & \text{altfel}
+\end{cases}
+\end{equation}
+
+
+\subsubsection{Modalități de resetare a potențialului membranei}
+
+Există două metode care se pot utiliza:
+\begin{itemize}
+    \item \textbf{Soft reset} 
+    \begin{itemize}
+        \item \textbf{Formula:} \(\beta S_{\text{out}}[t - 1]\theta\).
+        \item Cand pragul este depășit, potențialul membranei nu este resetat la 0.
+        \item Oferă performanțe mai bune.
+    \end{itemize}
+    \item \textbf{Hard reset sau resetarea la zero}
+    \begin{itemize}
+        \item \textbf{Formula:} \(S_{\text{out}}[t - 1]\theta\).
+        \item Cand pragul este depășit, potențialul membranei este setat la 0.
+    \end{itemize}
+\end{itemize}
+
+\section{Reprezentarea Datelor}
+
+Atât în creierul uman, cât și în rețelele neurale de tip spike, comunicarea se realizează prin intermediul impulsurilor electrice, denumite spike-uri. Informațiile din mediul înconjurător, cum ar fi temperatura sau presiunea aerului, sunt captate de senzori și reprezentate prin numere reale. Prin urmare, pentru a transmite și interpreta datele într-o rețea neurală spike, sunt necesare diverse metode de conversie.
+
+\subsection{Encodarea input-ului}
+
+Neuronul Leaky Integrate-and-Fire poate accepta valori continue, permițând astfel rețelelor neuronale spike să primească atât spike-uri, cât și numere reale. Există trei metode principale de a converti datele continue în spike-uri: rate coding, latency coding și delta modulation.
+
+
+\subsubsection{Rate coding}
+
+Această metodă de codare asociază valorilor mari un număr ridicat de spike-uri, iar valorilor mici un număr redus de spike-uri. De exemplu, într-o imagine, un pixel luminos va genera mai multe spike-uri decât un pixel întunecat într-un interval de timp. Atunci când nu se produc spike-uri, rețeaua nu învață, situație cunoscută sub numele de problema neuronului mort. Rate coding elimină această problemă deoarece promovează un număr mare de spike-uri. Relația dintre valoarea input-ului și numărul de spike-uri conferă acestei metode o toleranță ridicată la eroare. Cu toate acestea, rate coding are un consum energetic ridicat din cauza numărului mare de spike-uri generate.
+
+
+\subsubsection{Latency coding}
+
+În această metodă, nu numărul de spike-uri produse este esențial, ci momentul în care apar aceste spike-uri. Un pixel luminos dintr-o imagine va produce primul spike, în timp ce un pixel întunecat îl va produce ultimul sau deloc. Spre deosebire de rate coding, latency coding atribuie o importanță mai mare fiecărui spike, ceea ce face metoda mai susceptibilă la posibile erori. Cu toate acestea, avantajul major al acestei metode constă în consumul redus de energie. De asemenea, un număr mai mic de spike-uri implică mai puține accesări ale memorie, ceea ce contribuie la eficiența generală.
+
+
+\subsubsection{Delta modulation}
+
+Metoda delta modulation este ideală pentru date cu dimensiune temporală, cum ar fi un videoclip sau o înregistrare audio. În cazul unui videoclip, neuronul asociat unui pixel va emite un spike doar atunci când diferența dintre două frame-uri succesive depășește un anumit prag. În figura \ref{fig:camera}, putem observa cum senzorul bazat pe eveniment transmite doar schimbările din cadru, ignorând fundalul.
+
+
+\subsection{Decodearea output-ului}
+
+Reprezinta modul in care interpretam output-ul retelei neurale spike. Exita 3 metode principale: rate coding, latency coding si population coding.
+
+
+\subsubsection{Rate coding}
+
+Considerăm cazul clasificării în N clase. Într-o rețea neurală artificială, vom avea N neuroni în stratul de ieșire, iar clasa prezisă este asociată neuronului cu activarea cea mai mare. În cazul unei rețele neuronale spike care utilizează rate coding pentru decodarea output-ului, clasa prezisă este determinată de neuronul care produce cele mai multe spike-uri într-un anumit interval de timp.
+
+
+\subsubsection{Latency coding}
+
+Clasa prezisă este asociată cu primul neuron care produce un impuls electric. Această metodă este inspirată de modul în care creierul nostru răspunde la stimuli din mediul înconjurător.
+
+\subsubsection{Population coding}
+
+Aceasta metodă funcționează similar cu rate coding, dar implică un număr mai mare de neuroni asociați fiecărei clase.
+
+
+\section{Antrenarea rețelelor neurale spike}
+
+Antrenarea rețelelor neuronale spike poate fi realizată prin trei metode principale: shadow training, reguli de învățare locală și backpropagation bazat pe spike-uri.
+
+\textbf{Shadow Training} implică antrenarea unei rețele neurale artificiale convenționale, care este ulterior convertită într-o rețea neurală spike.
+
+\textbf{Local learning rules} se bazează pe aplicarea algoritmului de backpropagation în zone locale din rețea, permițând ajustarea localizată a conexiunilor neurale.
+
+\textbf{Algoritmul de backpropagation bazat pe spike-uri} permite antrenarea rețelelor neurale de tip spike de la zero. În lucrare, vom aplica această metodă pentru antrenarea rețelelor neurale.
+
+\subsection{Backpropagation}
+
+Algoritmul backpropagation facilitează antrenarea rețelelor neurale prin minimizarea unei funcții obiectiv. Acesta ne permite să analizăm contribuția fiecărui parametru la minimizarea funcției folosind regula lanțului. Odată ce gradientul este calculat, acesta ne ajută să actualizăm parametrii în mod optim pentru a minimiza funcția obiectiv.
+
+Actualizarea greutăților $W_\text{in}$ se realizează în modul următor:
+
+\begin{equation}
+W_\text{in} \leftarrow W_\text{in} - \eta \frac{\partial L}{\partial W_\text{in}}
+\end{equation}
+
+Pentru a actualiza $W_\text{in}$ este necesară derivata funcției obiectiv în raport cu greutățile neuronului. Această derivată se calculează utilizând regula lanțului astfel:
+
+
+\begin{equation}
+\frac{\partial L}{\partial W_\text{in}} = \frac{\partial L}{\partial S_\text{out}} \frac{\partial S_\text{out}}{\partial U} \frac{\partial U}{\partial W_\text{in}}
+\end{equation}
+
+Componenta din mijloc $\frac{\partial S_\text{out}}{\partial U}$ reprezintă derivata funcției Heaviside \eqref{eq:outputNeuronLIF}. Această funcție este utilizată deoarece modelează bine modul în care este calculat output-ul neuronului. Cu toate acestea, derivata ei introduce câteva probleme.
+
+
+\subsubsection{Funcția treaptă (Heaviside) nediferențiabilă}
+
+Derivata funcției treaptă reprezintă funcția Dirac-Delta:
+
+\begin{equation}
+\label{eq:diracFunction}
+\frac{\partial S}{\partial U} = \delta(U[t] - \theta) \in \{0, \infty\}
+\end{equation}
+
+Problema neuronilor inactivi (dead neuron problem) apare atunci când derivata funcției este preponderent zero, ceea ce împiedică actualizarea greutăților neuronilor. În plus, funcția Dirac nu este derivabilă în punctul 0, unde valoarea funcției tinde spre infinit.
+
+\subsubsection{Surrogate gradients}
+
+Pentru a rezolva această problemă, se pot utiliza "surrogate gradients" (gradienti de substituție). Această metodă constă în utilizarea funcției Heaviside în pasul de forward, dar înlocuirea acesteia cu o funcție continuă similară în pasul de backward. În librăria snnTorch, funcția Heaviside este înlocuită cu funcția arctan în timpul pasului de backward. Această abordare permite actualizarea eficientă a greutăților și evitarea problemelor asociate cu derivata nulă a funcției Heaviside.

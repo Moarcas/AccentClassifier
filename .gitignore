@@ -3,6 +3,7 @@ snn-tha/
 code/preprocessing/.venv/
 code/powerProfiling/.venv/
 code/preprocessing/__pycache__/
+code/powerProfiling/__pycache__/
 documentatie
 images/
 plots/
