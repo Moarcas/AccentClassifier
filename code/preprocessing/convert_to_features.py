@@ -1,4 +1,5 @@
 from tqdm import tqdm
+from collections import OrderedDict
 import sys
 import librosa
 import os
@@ -27,8 +28,10 @@ class Audio2Features:
         else:
             raise ValueError("Invalid feature type")
 
-        self.features_path = f'../../data/arrays/{feature_type}_features.npy'
-        self.labels_path = '../../data/arrays/labels.npy'
+        self.train_features_path = f'../../data/arrays/train_{feature_type}_features.npy'
+        self.train_labels_path = '../../data/arrays/train_labels.npy'
+        self.test_features_path = f'../../data/arrays/test_{feature_type}_features.npy'
+        self.test_labels_path = '../../data/arrays/test_labels.npy'
 
         self._default_spec_kwargs_mel = {
             "sr": 22050,
@@ -77,32 +80,47 @@ class Audio2Features:
         return mfcc
 
     def convert(self):
-        """ Converts features to features
-        Saves:
-            features: a int8 numpy array of events of shape (num_samples, input_size, timestamps)
-            labels: a int8 numpy array of events of shape (num_samples)
-        """
-        print(f'Converting audio to {self.feature_type}...')
+        languages_with_one_speaker = ['odiya', 'welsh']
+        speaker_for_test = '01'
 
-        features_array = []
-        labels_array = []
+        train_features_array = []
+        train_labels_array = []
+        test_features_array = []
+        test_labels_array = []
 
         for filename in tqdm(glob(self.audio_dir)):
+            language, speaker_number = filename.split('/')[4].split('_')[0:2]
+            speaker_number = speaker_number[1:]
+
             audio, _ = librosa.load(filename)
             features = self.convert2features(audio)
             label = self.get_label(filename)
 
-            features_array.append(features)
-            labels_array.append(label)
+            if language in languages_with_one_speaker or speaker_number != speaker_for_test:
+                # add to train
+                train_features_array.append(features)
+                train_labels_array.append(label)
+            else:
+                # add to test
+                continue
+                test_features_array.append(features)
+                test_labels_array.append(label)
 
-        features_array = np.stack(features_array, axis=0)
-        labels_array = np.stack(labels_array, axis=0)
+        train_features_array = np.stack(train_features_array, axis=0)
+        train_labels_array = np.stack(train_labels_array, axis=0)
+        #test_features_array = np.stack(test_features_array, axis=0)
+        #test_labels_array = np.stack(test_labels_array, axis=0)
 
-        np.save(self.features_path, features_array)
-        np.save(self.labels_path, labels_array)
+        np.save(self.train_features_path, train_features_array)
+        np.save(self.train_labels_path, train_labels_array)
+        #np.save(self.test_features_path, test_features_array)
+        #np.save(self.test_labels_path, test_labels_array)
 
-        print('Features saved successfully in', self.features_path)
-        print('Labels saved successfully in', self.labels_path)
+        print('Train features saved successfully in', self.train_features_path)
+        print('Train labels saved successfully in', self.train_labels_path)
+
+        print('Test features saved successfully in', self.test_features_path)
+        print('Test labels saved successfully in', self.test_labels_path)
 
 
 def main():
